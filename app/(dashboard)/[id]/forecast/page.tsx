@@ -21,6 +21,17 @@ export default function ForecastPage() {
   const [days, setDays] = useState<number[]>([7]);
   const { projectData, loading } = useProjects();
 
+  if (!projectData) {
+    return (
+      <>
+        <PageHeader
+          title="Нет загруженных данных"
+          description={`Загрузите данные в разделе "Загрузка данных"`}
+        />
+      </>
+    );
+  }
+
   const result = runAnalytics(projectData ?? []);
   const series = result.dailySeries.map((d) => d.revenue);
   const forecast = runForecast(series, "linear");

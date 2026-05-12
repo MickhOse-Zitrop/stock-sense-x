@@ -25,6 +25,18 @@ import { buildKPI } from "@/lib/kpi";
 
 export default function DashboardPage() {
   const { projectData, loading } = useProjects();
+
+  if (!projectData) {
+    return (
+      <>
+        <PageHeader
+          title="Нет загруженных данных"
+          description={`Загрузите данные в разделе "Загрузка данных"`}
+        />
+      </>
+    );
+  }
+
   const analytics = runAnalytics(projectData ?? []);
   const kpi = buildKPI(analytics);
 
