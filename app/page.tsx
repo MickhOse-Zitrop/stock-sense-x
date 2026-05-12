@@ -46,7 +46,7 @@ export default function HomePage() {
                     Вход в аккаунт
                   </Button>
                 </LoginDialog>
-                <Link href="/upload-data">
+                <Link href="/-1/upload-data">
                   <Button className="shadow-xl/40">
                     Демо-версия
                     <MoveRight />

@@ -52,20 +52,22 @@ export const DataOptions: React.FC<Props> = ({ className, demo }) => {
                   </FieldDescription>
                 </FieldContent>
               </Field>
-              <Field orientation="horizontal">
-                <RadioGroupItem value="full" id="full-analysis" />
-                <FieldContent>
-                  <FieldLabel
-                    htmlFor="full-analysis"
-                    className="text-base/4 cursor-pointer"
-                  >
-                    Полный анализ
-                  </FieldLabel>
-                  <FieldDescription>
-                    Расширенная аналитика с прогнозированием и оптимизацией
-                  </FieldDescription>
-                </FieldContent>
-              </Field>
+              {!demo ? (
+                <Field orientation="horizontal">
+                  <RadioGroupItem value="full" id="full-analysis" />
+                  <FieldContent>
+                    <FieldLabel
+                      htmlFor="full-analysis"
+                      className="text-base/4 cursor-pointer"
+                    >
+                      Полный анализ
+                    </FieldLabel>
+                    <FieldDescription>
+                      Расширенная аналитика с прогнозированием и оптимизацией
+                    </FieldDescription>
+                  </FieldContent>
+                </Field>
+              ) : null}
             </RadioGroup>
           </FieldGroup>
         </FieldSet>

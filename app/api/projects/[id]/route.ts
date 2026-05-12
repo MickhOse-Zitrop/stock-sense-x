@@ -9,21 +9,16 @@ export async function GET(
 ) {
   try {
     const id = Number((await params).id);
-
     const session = await getUserSession();
-
     if (!session) {
       return NextResponse.json({ error: "Пользователь не найден" });
     }
-
     const user = await prisma.user.findFirst({
       where: { id: Number(session.id) },
     });
-
     if (!user) {
       return NextResponse.json({ error: "Пользователь не найден" });
     }
-
     const project = await prisma.project.findFirst({
       where: { id: id },
     });
@@ -32,10 +27,14 @@ export async function GET(
       return NextResponse.json({ error: "Проект не найден" });
     }
 
-    const response = await fetch((project.dataUrl as string) || "");
+    if (!project.dataUrl) {
+      return NextResponse.json({ text: "" });
+    }
+
+    const response = await fetch(project.dataUrl);
 
     if (!response.ok) {
-      return NextResponse.json({ error: "Данные не найдены" });
+      return NextResponse.json({ text: "" });
     }
 
     const fileBuffer = await response.arrayBuffer();
@@ -147,6 +146,59 @@ export async function DELETE(
     });
 
     return NextResponse.json({ projects, lastProject: undefined });
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json({ message: `${error}` }, { status: 500 });
+  }
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const id = Number((await params).id);
+
+    const session = await getUserSession();
+
+    if (!session) {
+      return NextResponse.json({ error: "Пользователь не найден" });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { id: Number(session.id) },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "Пользователь не найден" });
+    }
+
+    const project = await prisma.project.findFirst({
+      where: { id, userId: user.id },
+    });
+
+    if (!project) {
+      return NextResponse.json({ error: "Проект не найден" });
+    }
+
+    // await prisma.user.update({
+    //   where: { id: user.id },
+    //   data: { lastProjectId: undefined },
+    // });
+
+    const lastProject = await prisma.project.update({
+      where: {
+        id: project.id
+      }, data: {
+        dataUrl: ""
+      }
+    })
+
+    const projects = await prisma.project.findMany({
+      where: { userId: user.id },
+    });
+
+    return NextResponse.json({ projects, lastProject });
   } catch (error) {
     console.log(error);
     return NextResponse.json({ message: `${error}` }, { status: 500 });

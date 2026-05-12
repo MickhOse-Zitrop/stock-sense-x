@@ -26,6 +26,10 @@ export const deleteProject = async (id: number): Promise<ProjectsDTO> => {
   return (await axiosInstance.delete(`/projects/${id}`)).data;
 };
 
-export const fetchData = async (id: number): Promise<{ text: string }> => {
+export const deleteProjectData = async (id: number): Promise<ProjectsDTO> => {
+  return (await axiosInstance.post(`/projects/${id}`)).data;
+};
+
+export const getData = async (id: number): Promise<{ text: string }> => {
   return (await axiosInstance.get<{ text: string }>(`/projects/${id}`)).data;
 };

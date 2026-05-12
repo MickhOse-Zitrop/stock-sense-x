@@ -7,6 +7,7 @@ import {
   Input,
   Label,
   Progress,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -30,7 +31,7 @@ interface Props {
 }
 
 export const UploadData: React.FC<Props> = ({ className, user }) => {
-  const { lastProject: project, projectData, fetchData } = useProjects();
+  const { lastProject: project, projectData, loading } = useProjects();
   const [progress, setProgress] = useState<number>(0);
   const [uploading, setUploading] = useState<boolean>(false);
   const [blob, setBlob] = React.useState<PutBlobResult | null>(null);
@@ -40,9 +41,168 @@ export const UploadData: React.FC<Props> = ({ className, user }) => {
   const router = useRouter();
   const form = useForm();
 
-  if (projectData?.length) {
-    console.log(projectData);
+  if (loading) {
+    return (
+      <Block className="size-full">
+        <Skeleton className="size-full" />
+      </Block>
+    );
+  }
 
+  console.log(projectData);
+
+  if (!user) {
+    const projectData: {
+      [p: string]: string;
+    }[] = [
+      {
+        date: "2026-01-01",
+        product: "1234",
+        qty: "10",
+        price: "100",
+      },
+      {
+        date: "2026-01-01",
+        product: "4321",
+        qty: "5",
+        price: "200",
+      },
+      {
+        date: "2026-01-02",
+        product: "1234",
+        qty: "12",
+        price: "100",
+      },
+      {
+        date: "2026-01-02",
+        product: "4321",
+        qty: "4",
+        price: "200",
+      },
+      {
+        date: "2026-01-03",
+        product: "1234",
+        qty: "15",
+        price: "100",
+      },
+      {
+        date: "2026-01-03",
+        product: "4321",
+        qty: "6",
+        price: "200",
+      },
+      {
+        date: "2026-01-04",
+        product: "1234",
+        qty: "18",
+        price: "100",
+      },
+      {
+        date: "2026-01-04",
+        product: "4321",
+        qty: "7",
+        price: "200",
+      },
+      {
+        date: "2026-01-05",
+        product: "1234",
+        qty: "17",
+        price: "100",
+      },
+      {
+        date: "2026-01-05",
+        product: "4321",
+        qty: "8",
+        price: "200",
+      },
+      {
+        date: "2026-01-06",
+        product: "1234",
+        qty: "20",
+        price: "100",
+      },
+      {
+        date: "2026-01-06",
+        product: "4321",
+        qty: "9",
+        price: "200",
+      },
+      {
+        date: "2026-01-07",
+        product: "1234",
+        qty: "22",
+        price: "100",
+      },
+      {
+        date: "2026-01-07",
+        product: "4321",
+        qty: "10",
+        price: "200",
+      },
+      {
+        date: "2026-01-08",
+        product: "1234",
+        qty: "21",
+        price: "100",
+      },
+      {
+        date: "2026-01-08",
+        product: "4321",
+        qty: "11",
+        price: "200",
+      },
+      {
+        date: "2026-01-09",
+        product: "1234",
+        qty: "24",
+        price: "100",
+      },
+      {
+        date: "2026-01-09",
+        product: "4321",
+        qty: "12",
+        price: "200",
+      },
+      {
+        date: "2026-01-10",
+        product: "1234",
+        qty: "25",
+        price: "100",
+      },
+      {
+        date: "2026-01-10",
+        product: "4321",
+        qty: "13",
+        price: "200",
+      },
+    ];
+    const columns = Object.keys(projectData[0]);
+
+    return (
+      <Block className="max-h-screen" title="Демо данные">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {columns.map((column) => (
+                <TableHead key={column}>{column}</TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {projectData.map((row, index) => (
+              <TableRow className="border-muted" key={index}>
+                {columns.map((column) => (
+                  <TableCell key={column}>{row[column]}</TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Block>
+    );
+  }
+
+  if (projectData?.length) {
     const columns = projectData.length ? Object.keys(projectData[0]) : [];
 
     return (
@@ -115,7 +275,7 @@ export const UploadData: React.FC<Props> = ({ className, user }) => {
         });
 
         toast.success(message);
-        router.push(`${projectId}/analysis`);
+        router.push(`/analysis`);
       }
     } catch (error) {
       console.log(error);

@@ -3,11 +3,13 @@ import { getUserSession } from "@/lib/get-user-session";
 import { prisma } from "@/prisma/prisma";
 import React from "react";
 
-export default async function Home() {
+export default async function Home({ params }: { params: { id: string } }) {
+  const { id } = await params;
+
   const session = await getUserSession();
 
   if (!session) {
-    return <Page.UploadData user={undefined} />;
+    return <Page.UploadData />;
   }
 
   const user =

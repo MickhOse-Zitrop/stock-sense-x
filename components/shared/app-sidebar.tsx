@@ -36,23 +36,25 @@ export const AppSidebar: React.FC<Props> = ({ className, user }) => {
         <SidebarGroup>
           <SidebarGroupLabel>Инструменты</SidebarGroupLabel>
           <SidebarMenu className="gap-2">
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  isActive={pathname.endsWith(item.link)}
-                  variant="menu"
-                  tooltip={item.title}
-                  asChild
-                >
-                  <Link
-                    href={`/${authorized ? lastProject?.id : "-1"}/${item.link}`}
+            {menuItems.map((item) =>
+              item.demo !== authorized ? (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    isActive={pathname.endsWith(item.link)}
+                    variant="menu"
+                    tooltip={item.title}
+                    asChild
                   >
-                    {item.icon}
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+                    <Link
+                      href={`/${authorized ? lastProject?.id : "-1"}/${item.link}`}
+                    >
+                      {item.icon}
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ) : null,
+            )}
           </SidebarMenu>
         </SidebarGroup>
         {authorized && (

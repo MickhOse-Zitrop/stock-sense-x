@@ -12,19 +12,12 @@ import {
   TableRow,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { AnalyzedItem } from "@/lib/analytics";
 
 interface Props {
-  data: TableData[];
+  data: AnalyzedItem[];
   className?: string;
 }
-
-type TableData = {
-  name: string;
-  category: string;
-  revenue: string;
-  variance: string;
-  strategy: string;
-};
 
 export const TableAnalysis: React.FC<Props> = ({ className, data }) => {
   const [fullScreen, setFullScreen] = React.useState(false);
@@ -50,12 +43,12 @@ export const TableAnalysis: React.FC<Props> = ({ className, data }) => {
               <TableRow className="border-muted" key={product.name}>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>
-                  <Badge>{product.category}</Badge>
+                  <Badge>{product.group}</Badge>
                 </TableCell>
                 <TableCell className="font-semibold">
                   {product.revenue}
                 </TableCell>
-                <TableCell>{product.variance}</TableCell>
+                <TableCell>{product.variation}</TableCell>
                 <TableCell>{product.strategy}</TableCell>
               </TableRow>
             ))}

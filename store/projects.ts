@@ -25,8 +25,8 @@ export interface ProjectsState {
     id: number,
     callback: (href: string) => void,
   ) => Promise<void>;
+  deleteProjectData: (id: number) => Promise<void>;
   fetchProjects: () => Promise<void>;
-  fetchData: (id: number) => Promise<void>;
 }
 
 export const useProjectsStore = create<ProjectsState>((set, get) => ({
@@ -86,23 +86,27 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     }
   },
 
-  fetchProjects: async () => {
+  deleteProjectData: async (id: number) => {
     try {
       set({ loading: true, error: false });
-      const data = await Api.projects.getProjects();
+      const data = await Api.projects.deleteProjectData(id);
       set({ ...data });
+      toast.success("Данные успешно удалены!");
     } catch (error) {
       console.log(error);
       set({ error: true });
+      toast.error("Ошибка при удалении. Попробуйте еще раз");
     } finally {
       set({ loading: false });
     }
   },
 
-  fetchData: async (id: number) => {
+  fetchProjects: async () => {
     try {
       set({ loading: true, error: false });
-      const data = await Api.projects.fetchData(id);
+      const projects = await Api.projects.getProjects();
+      set({ ...projects });
+      const data = await Api.projects.getData(get().lastProject!.id);
       set({ projectData: csvToArray(data.text) });
     } catch (error) {
       console.log(error);

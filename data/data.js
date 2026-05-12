@@ -24,11 +24,13 @@ export const menuItems = [
     title: "Прогнозирование спроса",
     icon: <ChartNoAxesCombined />,
     link: "forecast",
+    demo: false,
   },
   {
     title: "Дашборд KPI",
     icon: <LayoutDashboard />,
     link: "dashboard",
+    demo: false,
   },
   {
     title: "Расчет запасов",

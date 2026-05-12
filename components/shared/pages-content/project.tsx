@@ -1,7 +1,12 @@
 "use client";
 
 import React from "react";
-import { Block, Page, PageHeader, ProjectEditDialog } from "@/components/shared";
+import {
+  Block,
+  Page,
+  PageHeader,
+  ProjectEditDialog,
+} from "@/components/shared";
 import { useProjects } from "@/hooks";
 import {
   AlertDialog,
@@ -16,7 +21,7 @@ import {
   AlertDialogTrigger,
   Button,
   Separator,
-  Skeleton
+  Skeleton,
 } from "@/components/ui";
 import { ArrowDownToLine, Edit2, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -31,6 +36,7 @@ export const Project: React.FC<Props> = ({ className }) => {
     loading,
     editProject,
     deleteProject,
+    deleteProjectData,
   } = useProjects();
   const router = useRouter();
 
@@ -103,10 +109,37 @@ export const Project: React.FC<Props> = ({ className }) => {
                   Скачать
                 </Button>
               </a>
-              <Button variant="destructive">
-                <Trash />
-                Удалить
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive">
+                    <Trash />
+                    Удалить
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent size="sm">
+                  <AlertDialogHeader>
+                    <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+                      <Trash />
+                    </AlertDialogMedia>
+                    <AlertDialogTitle>Удалить данные?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Это действие навсегда удалит данные {project.name}. Вы
+                      уверены, что хотите удалить их?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel variant="outline">
+                      Отмена
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      onClick={() => deleteProjectData(project.id)}
+                    >
+                      Удалить
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           ) : null}
         </div>
