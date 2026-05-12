@@ -26,7 +26,7 @@ import { buildKPI } from "@/lib/kpi";
 export default function DashboardPage() {
   const { projectData, loading } = useProjects();
 
-  if (!projectData) {
+  if (!projectData?.length) {
     return (
       <>
         <PageHeader

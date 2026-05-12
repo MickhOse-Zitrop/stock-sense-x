@@ -21,7 +21,7 @@ export default function ForecastPage() {
   const [days, setDays] = useState<number[]>([7]);
   const { projectData, loading } = useProjects();
 
-  if (!projectData) {
+  if (!projectData?.length) {
     return (
       <>
         <PageHeader
