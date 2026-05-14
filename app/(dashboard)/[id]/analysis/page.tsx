@@ -176,7 +176,7 @@ export default function AnalysisPage() {
               <h5 className="text-xl font-semibold">{key}</h5>
               <h4 className="text-3xl font-bold">{cell.count}</h4>
               <p className="text-sm text-muted-foreground">
-                товаров ({cell.percent})
+                товаров ({cell.percent.toFixed(2)}%)
               </p>
             </div>
           ))}

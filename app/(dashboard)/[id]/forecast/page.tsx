@@ -44,7 +44,21 @@ export default function ForecastPage() {
 
   console.log(projectData);
 
-  const lastDate = new Date(
+  function parseDate(data: string) {
+    let year, month, day;
+
+    if (data.includes("-")) {
+      [year, month, day] = data.split("-");
+    } else if (data.includes(".")) {
+      [day, month, year] = data.split(".");
+    } else {
+      throw new Error("Неизвестный формат даты");
+    }
+
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  const lastDate = parseDate(
     result.dailySeries[result.dailySeries.length - 1].date,
   );
 
