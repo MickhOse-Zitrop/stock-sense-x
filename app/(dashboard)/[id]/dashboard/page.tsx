@@ -145,7 +145,7 @@ export default function DashboardPage() {
           <WarningItem
             key={a.product}
             alert={a.level === "critical"}
-            id={Number(a.product)}
+            id={a.product}
             description={a.message}
           />
         ))}

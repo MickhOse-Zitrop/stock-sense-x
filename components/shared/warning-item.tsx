@@ -5,7 +5,7 @@ import { AlertCircle } from "lucide-react";
 
 interface Props {
   alert?: boolean;
-  id: number;
+  id: string;
   description: string;
   className?: string;
 }
