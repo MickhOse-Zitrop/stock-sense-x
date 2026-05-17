@@ -1,79 +1,171 @@
-export type ModelType = "naive" | "moving_average" | "linear";
+export type ModelType = "naive" | "moving_average" | "linear" | "exp_smoothing";
+
+// --------------------------------------------------
+// Helpers
+// --------------------------------------------------
+
+function mean(arr: number[]) {
+  return arr.reduce((a, b) => a + b, 0) / (arr.length || 1);
+}
+
+// --------------------------------------------------
+// Naive
+// --------------------------------------------------
 
 export function naive(series: number[], steps = 4) {
-  const last = series[series.length - 1] ?? 0;
+  const last = series.at(-1) ?? 0;
+
   return Array(steps).fill(last);
 }
 
-export function movingAvg(series: number[], steps = 4) {
-  const avg = series.reduce((a, b) => a + b, 0) / (series.length || 1);
+// --------------------------------------------------
+// Moving Average
+// --------------------------------------------------
+
+export function movingAvg(series: number[], steps = 4, window = 3) {
+  const values = series.slice(-window);
+  const avg = mean(values);
 
   return Array(steps).fill(avg);
 }
 
-export function linear(series: number[], steps = 4) {
-  const n = series.length;
-  if (n < 2) return naive(series, steps);
+// --------------------------------------------------
+// Exponential Smoothing
+// --------------------------------------------------
 
-  const x = series.map((_, i) => i);
-  const y = series;
-
-  const xMean = x.reduce((a, b) => a + b, 0) / n;
-  const yMean = y.reduce((a, b) => a + b, 0) / n;
-
-  let num = 0;
-  let den = 0;
-
-  for (let i = 0; i < n; i++) {
-    num += (x[i] - xMean) * (y[i] - yMean);
-    den += (x[i] - xMean) ** 2;
+export function exponentialSmoothing(series: number[], steps = 4, alpha = 0.4) {
+  if (series.length === 0) {
+    return Array(steps).fill(0);
   }
 
-  const slope = den === 0 ? 0 : num / den;
+  let smoothed = series[0];
+
+  for (let i = 1; i < series.length; i++) {
+    smoothed = alpha * series[i] + (1 - alpha) * smoothed;
+  }
+
+  return Array(steps).fill(smoothed);
+}
+
+// --------------------------------------------------
+// Linear Regression
+// --------------------------------------------------
+
+export function linear(series: number[], steps = 4) {
+  const n = series.length;
+
+  if (n < 2) {
+    return naive(series, steps);
+  }
+
+  const x = Array.from({ length: n }, (_, i) => i);
+  const y = series;
+
+  const xMean = mean(x);
+  const yMean = mean(y);
+
+  let numerator = 0;
+  let denominator = 0;
+
+  for (let i = 0; i < n; i++) {
+    numerator += (x[i] - xMean) * (y[i] - yMean);
+    denominator += (x[i] - xMean) ** 2;
+  }
+
+  const slope = denominator === 0 ? 0 : numerator / denominator;
   const intercept = yMean - slope * xMean;
 
-  return Array.from({ length: steps }, (_, i) => slope * (n + i) + intercept);
+  // Если тренд почти отсутствует
+  if (Math.abs(slope) < 0.0001) {
+    return movingAvg(series, steps);
+  }
+
+  return Array.from({ length: steps }, (_, i) => {
+    return slope * (n + i) + intercept;
+  });
 }
 
-export function mae(a: number[], p: number[]) {
-  const n = Math.min(a.length, p.length);
-  return a.slice(0, n).reduce((s, v, i) => s + Math.abs(v - p[i]), 0) / n;
-}
+// --------------------------------------------------
+// Metrics
+// --------------------------------------------------
 
-export function mape(a: number[], p: number[]) {
-  const n = Math.min(a.length, p.length);
+export function mae(actual: number[], predicted: number[]) {
+  const n = Math.min(actual.length, predicted.length);
+
   return (
-    (a.slice(0, n).reduce((s, v, i) => {
-      if (v === 0) return s;
-      return s + Math.abs((v - p[i]) / v);
-    }, 0) /
-      n) *
-    100
+    actual.slice(0, n).reduce((sum, value, i) => {
+      return sum + Math.abs(value - predicted[i]);
+    }, 0) / n
   );
 }
 
-export function r2(a: number[], p: number[]) {
-  const n = Math.min(a.length, p.length);
+export function mape(actual: number[], predicted: number[]) {
+  const n = Math.min(actual.length, predicted.length);
 
-  const mean = a.slice(0, n).reduce((s, v) => s + v, 0) / n;
+  let count = 0;
+
+  const total = actual.slice(0, n).reduce((sum, value, i) => {
+    if (value === 0) {
+      return sum;
+    }
+
+    count++;
+
+    return sum + Math.abs((value - predicted[i]) / value);
+  }, 0);
+
+  return count === 0 ? 0 : (total / count) * 100;
+}
+
+export function r2(actual: number[], predicted: number[]) {
+  const n = Math.min(actual.length, predicted.length);
+
+  const avg = mean(actual.slice(0, n));
 
   let ssTot = 0;
   let ssRes = 0;
 
   for (let i = 0; i < n; i++) {
-    ssTot += (a[i] - mean) ** 2;
-    ssRes += (a[i] - p[i]) ** 2;
+    ssTot += (actual[i] - avg) ** 2;
+    ssRes += (actual[i] - predicted[i]) ** 2;
   }
 
-  return ssTot === 0 ? 0 : 1 - ssRes / ssTot;
+  if (ssTot === 0) {
+    return 0;
+  }
+
+  return 1 - ssRes / ssTot;
 }
+
+// --------------------------------------------------
+// Auto Select Best Model
+// --------------------------------------------------
+
+export function findBestModel(series: number[], steps = 4) {
+  const models: ModelType[] = [
+    "naive",
+    "moving_average",
+    "linear",
+    "exp_smoothing",
+  ];
+
+  const results = models.map((model) => runForecast(series, model, steps));
+
+  results.sort((a, b) => a.metrics.mae - b.metrics.mae);
+
+  return results[0];
+}
+
+// --------------------------------------------------
+// Main Forecast Runner
+// --------------------------------------------------
 
 export function runForecast(
   series: number[],
-  model: ModelType = "linear",
+  model: ModelType = "exp_smoothing",
   steps = 4,
 ) {
-  if (series.length <= steps + 2) {
+  if (series.length < steps + 3) {
     return {
       model,
       prediction: [],
@@ -90,16 +182,22 @@ export function runForecast(
 
   let prediction: number[] = [];
 
-  if (model === "naive") {
-    prediction = naive(train, steps);
-  }
+  switch (model) {
+    case "naive":
+      prediction = naive(train, steps);
+      break;
 
-  if (model === "moving_average") {
-    prediction = movingAvg(train, steps);
-  }
+    case "moving_average":
+      prediction = movingAvg(train, steps);
+      break;
 
-  if (model === "linear") {
-    prediction = linear(train, steps);
+    case "linear":
+      prediction = linear(train, steps);
+      break;
+
+    case "exp_smoothing":
+      prediction = exponentialSmoothing(train, steps);
+      break;
   }
 
   return {

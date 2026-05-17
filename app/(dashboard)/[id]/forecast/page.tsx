@@ -15,7 +15,7 @@ import {
 import { useState } from "react";
 import { useProjects } from "@/hooks";
 import { runAnalytics } from "@/lib/analytics";
-import { runForecast } from "@/lib/forecast";
+import { findBestModel } from "@/lib/forecast";
 
 export default function ForecastPage() {
   const [days, setDays] = useState<number[]>([7]);
@@ -34,7 +34,7 @@ export default function ForecastPage() {
 
   const result = runAnalytics(projectData ?? []);
   const series = result.dailySeries.map((d) => d.revenue);
-  const forecast = runForecast(series, "linear");
+  const forecast = findBestModel(series);
 
   const actualData = result.dailySeries.map((item) => ({
     date: item.date,
