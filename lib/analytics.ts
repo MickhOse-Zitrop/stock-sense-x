@@ -183,26 +183,8 @@ export function runAnalytics(raw: RawItem[]): AnalyticsResult {
   if (matrix["CZ"]?.count > 0) {
     recommendations.push({
       category: "CZ",
-      title: "Категория CZ (низкая ценность, высокая нестабильность)",
-      description:
-        "Обнаружены товары CZ — рекомендуется вывести из ассортимента",
-    });
-  }
-
-  if (matrix["AZ"]?.count > 0) {
-    recommendations.push({
-      category: "AZ",
-      title: "Категория AZ (высокая выручка, нестабильный спрос)",
-      description: "Товары AZ нестабильны — улучшите прогнозирование",
-    });
-  }
-
-  if (matrix["AX"]?.count > 0) {
-    recommendations.push({
-      category: "AX",
-      title: "Категория AX (ключевые товары)",
-      description:
-        "Товары AX — ключевые, держите минимальные запасы и точный контроль",
+      title: "Категория CZ",
+      description: "Рекомендуется вывести из ассортимента",
     });
   }
 
@@ -210,21 +192,46 @@ export function runAnalytics(raw: RawItem[]): AnalyticsResult {
 
   for (const item of raw) {
     const date = item.date;
-
     const revenue = Number(item.price ?? 0) * Number(item.qty ?? 0);
 
     dailyMap.set(date, (dailyMap.get(date) || 0) + revenue);
   }
 
-  const dailySeries = Array.from(dailyMap.entries()).map(([date, revenue]) => ({
-    date,
-    revenue,
-  }));
+  const unsortedSeries = Array.from(dailyMap.entries()).map(
+    ([date, revenue]) => ({
+      date,
+      revenue,
+    }),
+  );
+
+  // ✅ сортировка дат
+  const sorted = unsortedSeries.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+
+  // ✅ заполнение пропусков дней
+  const filled: typeof sorted = [];
+
+  if (sorted.length > 0) {
+    const start = new Date(sorted[0].date);
+    const end = new Date(sorted[sorted.length - 1].date);
+
+    const map = new Map(sorted.map((d) => [d.date, d.revenue]));
+
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const key = d.toISOString().split("T")[0];
+
+      filled.push({
+        date: key,
+        revenue: map.get(key) ?? 0,
+      });
+    }
+  }
 
   return {
     items,
     matrix,
-    dailySeries,
+    dailySeries: filled,
     kpi: {
       totalRevenue,
       totalQty,
